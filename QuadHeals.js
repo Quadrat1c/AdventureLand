@@ -7,11 +7,19 @@ var attack_mode=false
 var follow_mode=true
 
 setInterval(function(){
+	var leader = get_player("Quadrat1c");
+	var mage = get_player("QuadMage");
 	
 	if (follow_mode) {
-		var leader = get_player("Quadrat1c");
-		move(leader.real_x,leader.real_y);
+		move(
+			character.x+(leader.x-character.x)/2,
+			character.y+(leader.y-character.y)/2
+			);
 	}
+	
+	if (leader.hp<500) heal(leader);
+	if (mage.hp<200) heal(mage);
+	if (character.hp<200) heal(character);
 
 	//use_hp_or_mp();
 	if(character.hp<100 || character.mp<80) use_hp_or_mp();
@@ -48,6 +56,10 @@ setInterval(function(){
 },1000/4); // Loops every 1/4 seconds.
 
 // Learn Javascript: https://www.codecademy.com/learn/learn-javascript
+// Write your own CODE: https://github.com/kaansoral/adventureland
+// NOTE: If the tab isn't focused, browsers slow down the game
+// NOTE: Use the performance_trick() function as a workaround
+
 // Write your own CODE: https://github.com/kaansoral/adventureland
 // NOTE: If the tab isn't focused, browsers slow down the game
 // NOTE: Use the performance_trick() function as a workarou
