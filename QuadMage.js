@@ -25,12 +25,19 @@ setInterval(function () {
         if (can_attack(target)) {
             set_message("Attacking");
             attack(target);
-        }
+        } else {
+			move(
+				character.real_x+(target.x-character.real_x)/2,
+				character.real_y+(target.y-character.real_y)/2
+			);
+		}
     }
 
-    move(
-        character.x+(leader.x-character.x)/2,
-        character.y+(leader.y-character.y)/2
-    );
+    if (distance(character, leader) > 70 ) {
+		move(
+			character.real_x+(leader.x-character.real_x)/2,
+			character.real_y+(leader.y-character.real_y)/2
+		);
+	}
 
 },1000/4);  // Loops every 1/4 seconds.
