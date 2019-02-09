@@ -22,7 +22,8 @@ setInterval(function(){
 
 	if(!attack_mode || character.rip || is_moving(character)) return;
 	
-	var target=get_targeted_monster();
+	//var target = get_targeted_monster();
+	var target = get_target_of(leader);
 	if(!target)
 	{
 		target=get_nearest_monster({min_xp:100,max_att:120});
@@ -48,6 +49,18 @@ setInterval(function(){
 		// Walk half the distance
 	}
 	else if(can_attack(target))
+	{
+		set_message("Attacking");
+		attack(target);
+	}
+
+},1000/4); // Loops every 1/4 seconds.
+
+// Learn Javascript: https://www.codecademy.com/learn/learn-javascript
+// Write your own CODE: https://github.com/kaansoral/adventureland
+// NOTE: If the tab isn't focused, browsers slow down the game
+// NOTE: Use the performance_trick() function as a workaround
+
 	{
 		set_message("Attacking");
 		attack(target);
