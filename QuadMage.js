@@ -26,10 +26,12 @@ setInterval(function () {
             set_message("Attacking");
             attack(target);
         } else {
-			move(
-				character.real_x+(target.x-character.real_x)/2,
-				character.real_y+(target.y-character.real_y)/2
-			);
+			if (distance(character, target) > 70 ) {
+				move(
+					character.real_x+(target.x-character.real_x)/2,
+					character.real_y+(target.y-character.real_y)/2
+				);
+			}
 		}
     }
 
