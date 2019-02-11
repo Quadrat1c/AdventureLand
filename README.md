@@ -10,6 +10,7 @@ Will eventually add Auto party, Auto buy potion and auto upgrade items
 ## TODO:
 1. Implement using skills
 2. Travel system, Ex: Farming spots, town, etc
-3. Auto potion buying (Or have merchant bring pots to party location on request)
-4. Auto upgrading (Leave this job to merchant)
-5. Auto Merchant shop (Selling/Buying)
+3. Auto banking (Farmers place items found in bank for Merchant to sort/sell/upgrade)
+4. Auto potion buying (Or have merchant bring pots to party location on request)
+5. Auto upgrading (Leave this job to merchant)
+6. Auto Merchant shop (Selling/Buying)
