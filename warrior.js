@@ -1,222 +1,115 @@
-// Hey there!
-// This is CODE, lets you control your character with code.
-// If you don't know how to code, don't worry, It's easy.
-// Just set attack_mode to true and ENGAGE!
+var attack_mode = true;
+var skills_mode = true;
 
-var attack_mode=true
+/* TODO: Automate these */
+//start_character("QuadHeals", 31);
+//start_character("QuadMage", 32);
 
-setInterval(function(){
+//send_item("QuadHeals", 0, 149);
+//send_item("QuadMage", 3, 100);
+//smart_move("abee");
 
-	//use_hp_or_mp();
-	if(character.hp<100 || character.mp<80) use_hp_or_mp();
-	loot();
+setInterval( function () {
+    // TODO: Improve potion code maybe?
+    if (character.hp < character.max_hp * 0.75 || character.mp < character.max_mp * 0.50) use_hp_or_mp();
+    loot();
 
-	if(!attack_mode || character.rip || is_moving(character)) return;
+    if (!attack_mode || character.rip || is_moving(character)) return;
 
-	var target=get_targeted_monster();
-	if(!target)
-	{
-		target=get_nearest_monster({min_xp:100,max_att:120});
-		if(target) change_target(target);
-		else
-		{
-			set_message("No Monsters");
-			return;
-		}
-	}
-	
-	if(!in_attack_range(target))
-	{
-		move(
-			character.x+(target.x-character.x)/2,
-			character.y+(target.y-character.y)/2
-			);
-		// Walk half the distance
-	}
-	else if(can_attack(target))
-	{
-		set_message("Attacking");
-		attack(target);
-	}
+    var target;
+    if (!target) {
+        target = get_nearest_monster({min_xp:targetMinXP, max_att:targetMaxAttack});
 
-},1000/4); // Loops every 1/4 seconds.
+        if (target) change_target(target);
+        else {
+            set_message("No Monsters");
+            return;
+        }
+    }
 
-// Learn Javascript: https://www.codecademy.com/learn/learn-javascript
-// Write your own CODE: https://github.com/kaansoral/adventureland
-// NOTE: If the tab isn't focused, browsers slow down the game
-// NOTE: Use the performance_trick() function as a workaround
+    if (!in_attack_range(target)) {
+        // charge if 100 distance
+        if (distance(character, target) > 100) useCharge(target);
+        move (
+            character.x+(target.x-character.x) / 2,
+            character.y+(target.y-character.y) / 2
+        );
+    } else if (can_attack(target)) {
+        set_message("Attacking");
+        if (skills_mode) useCombatSkills(target);
+        attack(target);
+    }
+},1000/4);  // loops every 1/4 seconds.
 
-var dpsInterval = 10000;
-var damageSums = {};
-var damageLog = [];
+function useCombatSkills(target) {
+    if (can_use("agitate") || can_use(WarriorSkills.Taunt.name, tartget)) {
+        let used = false;
 
-setInterval(function() {
-  update_dpsmeter();
-}, 100);
-function init_dpsmeter() {
+        if (can_use(WarriorSkills.Agitate.name, target) && 
+        character.level >= WarriorSkills.Agitate.level) used = useAgitate();
 
-  let $ = parent.$;
-  let brc = $('#bottomrightcorner');
+        if (!used && can_use(WarriorSkills.Taunt.name, target)) used = useTaunt(target);
 
-  brc.find('#dpsmeter').remove();
+        if (used) {
+            if (can_use(WarriorSkills.Cleave.name, target) && 
+            character.level >= WarriorSkills.Cleave.level &&
+            character.mp >= WarriorSkills.Cleave.mp) {
+                useCleave();
+            }
 
-  let dps_container = $('<div id="dpsmeter"></div>').css({
-    fontSize: '28px',
-    color: 'white',
-    textAlign: 'center',
-    display: 'table',
-    overflow: 'hidden',
-    marginBottom: '-5px',
-	width: "100%"
-  });
-	
-  //vertical centering in css is fun
-  let dpsmeter = $('<div id="dpsmetercontent"></div>')
-    .css({
-      //display: 'table-cell',
-      verticalAlign: 'middle'
-    })
-    .html("")
-    .appendTo(dps_container);
-
-  brc.children().first().after(dps_container);
-}
-
-
-
-function updateTimerList()
-{
-	let $ = parent.$;
-	
-	var listString = '<table style="border-style: solid;" border="5px" bgcolor="black" align="right" cellpadding="5"><tr align="center"><td colspan="2">Damage Meter</td></tr><tr align="center"><td>Name</td><td>DPS</td></tr>';
-	
-	if(parent.party_list != null && character.party != null)
-	{
-		for(id in parent.party_list)
-		{
-			var partyMember = parent.party_list[id];
-			var dps = getDPS(partyMember);
-			listString = listString + '<tr align="left"><td align="center">' + partyMember + '</td><td>' + dps + '</td></tr>';
-		}
-	}
-	else
-	{
-		var dps = getDPS(character.name);
-		listString = listString + '<tr align="left"><td align="center">' + character.name + '</td><td>' + dps + '</td></tr>';
-	}
-	
-	if(parent.party_list != null && character.party != null)
-	{
-		var dps = getTotalDPS();
-		listString = listString + '<tr align="left"><td>' + "Total" + '</td><td>' + dps + '</td></tr>';
-	}
-	
-	$('#' + "dpsmetercontent").html(listString);
-}
-
-
-function update_dpsmeter() {
-	updateTimerList();
-}
-
-
-init_dpsmeter(5)
-
-function getDPS(partyMember)
-{
-	var entry = damageSums[partyMember];
-	var dps = 0;
-	
-	if(entry != null)
-	{
-		var elapsed = new Date() - entry.startTime;
-
-		dps = parseFloat(Math.round((entry.sumDamage/(elapsed/1000)) * 100) / 100).toFixed(2);
-	}
-	return dps;
-}
-
-function getTotalDPS()
-{	
-	var minStart;
-	var sumDamage  = 0;
-	var dps = 0;
-	for(var id in damageSums)
-	{
-		var entry = damageSums[id];
-		
-		if(minStart == null || entry.startTime < minStart)
-		{
-			minStart = entry.startTime;
-		}
-		
-		sumDamage += entry.sumDamage;
-	}
-	
-	if(minStart != null)
-	{
-		var elapsed = new Date() - minStart;
-
-		dps = parseFloat(Math.round((sumDamage/(elapsed/1000)) * 100) / 100).toFixed(2);
-	}
-	
-	return dps;
-}
-
-//Clean out an pre-existing listeners
-if (parent.prev_handlersdpsmeter) {
-    for (let [event, handler] of parent.prev_handlersdpsmeter) {
-      parent.socket.removeListener(event, handler);
+            if (can_use(WarriorSkills.Stomp.name, target) && 
+            parent.G.items[character.slots.mainhand.name].wtype === WeaponTypes.Basher) {
+                useStomp();
+            }
+        }
     }
 }
 
-parent.prev_handlersdpsmeter = [];
+function useAgitate() { /** Taunts all nearby monsters. **/
+    let nearbyMonsters = getMonstersNearby(WarriorSkills.Agitate.range);
 
-//handler pattern shamelessly stolen from JourneyOver
-function register_dpsmeterhandler(event, handler) 
-{
-    parent.prev_handlersdpsmeter.push([event, handler]);
-    parent.socket.on(event, handler);
-};
-
-function dpsmeterHitHandler(event)
-{
-	if(parent != null)
-	{
-		var attacker = event.hid;
-		var attacked = event.id;
-
-		var attackerEntity = parent.entities[attacker];
-		
-		
-		
-		if(attacker == character.name)
-		{
-			attackerEntity = character;
-		}
-		
-		if((attackerEntity.party != null || attacker == character.name) || attackerEntity.party == character.party)
-		{
-			if(event.damage != null)
-			{
-				var attackerEntry = damageSums[attacker];
-				
-				if(attackerEntry == null)
-				{
-					var entry = {};
-					entry.startTime = new Date();
-					entry.sumDamage = 0;
-					damageSums[attacker] = entry;
-					attackerEntry = entry;
-				}
-				
-				attackerEntry.sumDamage += event.damage;
-				
-				damageSums[attacker] = attackerEntry;
-			}
-		}
-	}
+    if (nearbyMonsters.length) {
+        game_log("Taunting nearby monsters!", colorGreen);
+        actionText(parent.G.skills[WarriorSkills.Agitate.name].name, colorGreen);
+        use_skill(WarriorSkills.Agitate.name);
+        return true;
+    }
+    return false;
 }
 
+function useCharge(target) { /** Gain 30 Speed for a short duration. **/
+    if (can_use(WarriorSkills.Charge.name, target)) {
+        game_log("Charge!", colorGreen);
+        use_skill(WarriorSkills.Charge.name);
+    }
+}
 
-register_dpsmeterhandler("hit", dpsmeterHitHandler);
+function useCleave() { /** Swing your axe in a flurry to damage all enemies nearby! **/
+    game_log("Swinging my axe!", colorGreen);
+    actionText(parent.G.skills[WarriorSkills.Cleave.name].name, colorGreen);
+    use_skill(WarriorSkills.Cleave.name);
+}
+
+function useStomp() { /** Stop on the ground to Stun enemies nearby! **/
+    game_log("I'm an earthquake!", colorGreen);
+    actionText(parent.G.skills[WarriorSkills.Stomp.name].name, colorGreen);
+    use_skill(WarriorSkills.Stomp.name);
+}
+
+function useTaunt(target) { /** Taunts an enemy. Prevent players from escaping in pvp. Steals aggro **/
+    if (parent.distance(target, character) <= WarriorSkills.Taunt.range) {
+        game_log("Rhhawr!", colorGreen);
+        actionText(parent.G.skills[WarriorSkills.Taunt.name].name, colorGreen);
+        use_skill(WarriorSkills.Taunt.name, target);
+        return true;
+    }
+    return false;
+}
+
+function useHardShell() { /** Protect yourself from Physical Attacks for a short duration. **/
+
+}
+
+function useWarCry() { /** Motivate your allies to fight! **/
+    
+}
