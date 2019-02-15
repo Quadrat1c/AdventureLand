@@ -54,7 +54,8 @@ setInterval( function () {
 },1000/4);  // loops every 1/4 seconds.
 
 function useCombatSkills(target) {
-    if (can_use("curse") && character.mp > PriestSkills.Curse.mp) { 
+    if (can_use("curse") && character.mp > PriestSkills.Curse.mp
+	   && target.hp >= 3000) { 
         useCurse(target); 
     }
 }
