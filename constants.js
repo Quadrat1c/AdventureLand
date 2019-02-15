@@ -150,29 +150,29 @@ var MageSkills;
     };
 })(MageSkills || (MageSkills = {}));
 
-var Merchantkills;
-(function (Merchantkills) {
-    Merchantkills["Courage"] = {
+var MerchantSkills;
+(function (MerchantSkills) {
+    MerchantSkills["Courage"] = {
         name: "mcourage",
         mp: 2400,
         cd: 2000,
         level: 70
     };
-    Merchantkills["Luck"] = {
+    MerchantSkills["Luck"] = {
         name: "mluck",
         mp: 10,
         cd: 100,
         range: 320,
         level: 40
     };
-    Merchantkills["ThrowStuff"] = {
+    MerchantSkills["ThrowStuff"] = {
         name: "throw",
         mp: 200,
         cd: 400,
         range: 200,
         level: 60
     };
-})(Merchantkills || (Merchantkills = {}));
+})(MerchantSkills || (MerchantSkills = {}));
 
 var PriestSkills;
 (function (PriestSkills) {
